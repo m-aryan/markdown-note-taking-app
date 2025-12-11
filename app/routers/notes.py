@@ -1,7 +1,8 @@
 import os
-from fastapi import APIRouter, UploadFile, File, HTTPException
+from fastapi import APIRouter, UploadFile, File, HTTPException, Query
 from fastapi.responses import HTMLResponse
 from app.utils.renderer import render_markdown
+from app.services.grammer import check_grammar
 
 router = APIRouter()
 
@@ -30,7 +31,7 @@ async def upload_note(file: UploadFile = File(...)):
 @router.get("/list")
 async def list_notes():
     notes = [f for f in os.listdir(NOTES_DIRECTORY) if f.endswith(".md")]
-    return {"notes": notes}
+    return {f"notes : {notes}"}
 
 
 # TODO : Render .md as .html
@@ -55,3 +56,29 @@ async def render_note(filename: str):
 
 
 # TODO : Grammer Check
+@router.post("/grammar-check")
+async def grammar_check(
+    md_text: str = None,
+    filename: str = Query(None),
+):
+
+    if md_text:
+        mistakes = check_grammar(md_text)
+        return {"mistakes": mistakes}
+
+    if filename:
+        file_path = os.path.join(NOTES_DIRECTORY, filename)
+
+        if not os.path.isfile(file_path):
+            raise HTTPException(status_code=404, detail="File not found")
+
+        try:
+            with open(file_path, "r", encoding="utf-8") as f:
+                text = f.read()
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Error : {str(e)}")
+
+        mistakes = check_grammar(text)
+        return {"mistakes": mistakes}
+
+    raise HTTPException(status_code=400, detail="No text or filename provided")
