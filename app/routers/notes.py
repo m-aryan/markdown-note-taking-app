@@ -1,5 +1,7 @@
 import os
 from fastapi import APIRouter, UploadFile, File, HTTPException
+from fastapi.responses import HTMLResponse
+from app.utils.renderer import render_markdown
 
 router = APIRouter()
 
@@ -32,6 +34,24 @@ async def list_notes():
 
 
 # TODO : Render .md as .html
+@router.get("/{filename}/render", response_class=HTMLResponse)
+async def render_note(filename: str):
+    path = os.path.join(NOTES_DIRECTORY, filename)
+
+    if not os.path.isfile(path):
+        raise HTTPException(status_code=404, detail="File not found")
+
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            md_text = f.read()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error : {str(e)}")
+
+    try:
+        html = render_markdown(md_text)
+        return HTMLResponse(content=html)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Markdown Render Error : {str(e)}")
 
 
 # TODO : Grammer Check
