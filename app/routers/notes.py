@@ -22,3 +22,16 @@ async def upload_note(file: UploadFile = File(...)):
         f.write(await file.read())
 
     return {"message": "File Uploaded", "filename": file.filename}
+
+
+# TODO : List Saved Notes
+@router.get("/list")
+async def list_notes():
+    notes = [f for f in os.listdir(NOTES_DIRECTORY) if f.endswith(".md")]
+    return {"notes": notes}
+
+
+# TODO : Render .md as .html
+
+
+# TODO : Grammer Check
