@@ -15,7 +15,6 @@ This is the solution for the **Markdown Note-Taking App** project from Roadmap.s
 
 # Features
 
-* **Create Notes** by sending Markdown text
 * **Upload .md files** to the server
 * **List all notes** stored on the backend
 * **Render markdown → HTML**
